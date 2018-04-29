@@ -2,6 +2,8 @@ import json
 import shutil
 from pathlib import Path
 
+print('Config')
+
 SETTINGS_EXAMPLE_FILE: str = 'settings.example.json'
 SETTINGS_FILE: str = 'settings.json'
 

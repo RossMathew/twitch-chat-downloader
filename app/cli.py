@@ -1,6 +1,8 @@
 import argparse
 import app.config
 
+print('CLI')
+
 
 # Ask for video ID
 def prompt_video_id() -> str:
@@ -31,10 +33,11 @@ parser.add_argument('-v', '--video', type=str, help='Video id')
 parser.add_argument('--client_id', type=str, help='Twitch client id')
 parser.add_argument('--verbose', action='store_true')
 parser.add_argument('-q', '--quiet', action='store_true')
-parser.add_argument('-o', '--output', type=str, help='Output folder', default='./output')
-parser.add_argument('-f', '--format', type=str, help='Message format', default='default')
+parser.add_argument('-o', '--output', type=str, help='Output folder', default=app.config.settings['default_output'])
+parser.add_argument('-f', '--format', type=str, help='Message format', default=app.config.settings['default_format'])
 # parser.add_argument('--start', type=int, help='Start time in seconds from video start')
 # parser.add_argument('--stop', type=int, help='Stop time in seconds from video start')
+parser.add_argument('--settings', type=str, help='Settings file', default=app.config.SETTINGS_FILE)
 parser.add_argument('--timezone', type=str, help='Timezone name')
 parser.add_argument('--init', action='store_true', help='Script setup')
 parser.add_argument('--update', action='store_true', help='Update settings')
@@ -44,6 +47,9 @@ parser.add_argument('--preview', action='store_true', help='Print chat lines')
 parser.add_argument('--input', type=str, help='Read data from JSON file')
 
 arguments = parser.parse_args()
+
+# Load settings file
+app.config.settings = app.config.load(str(arguments.settings))
 
 # Turn format to lowercase
 arguments.format = str(arguments.format).lower()

@@ -1,5 +1,7 @@
 {
     "client_id": null,
+    "default_format": "default",
+    "default_output": "./output",
     "formats": {
         "all": {
             "blacklist": [],
@@ -86,5 +88,5 @@
         }
     },
     "twitch_api": "https://api.twitch.tv/v5/{path}",
-    "version": "2.0.10"
+    "version": "2.0.11"
 }
