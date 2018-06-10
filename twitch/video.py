@@ -1,50 +1,38 @@
 import json
-import app.cli
-import twitch.api
-from typing import List, Generator
 from pathlib import Path
+from typing import List, Generator, Union
+from twitch import InvalidInputFileException, TwitchAPI
 
 
 class Video:
+    def __init__(self, video_id: str = None, json_file_name: str = None):
+        self.id: str = video_id
+        self.twitch_api: TwitchAPI = TwitchAPI()
+        self.json_file_name: str = json_file_name
+        self.comments: Union[Generator[dict, None, None], List[dict]] = {}
 
-    def __init__(self, video_id: str = None):
-
-        # Check if data should be loaded from an input file or form the Twitch API
-        if app.cli.arguments.input:
-            if Path(app.cli.arguments.input).is_file():
-                with open(app.cli.arguments.input, 'r', encoding='utf-8') as file:
+        if json_file_name:
+            if Path(json_file_name).is_file():
+                with open(json_file_name, 'r', encoding='utf-8') as file:
                     json_data = json.load(file)
-
-                    # Check if JSON format is valid
-                    if 'video' not in json_data or 'comments' not in json_data:
-                        print('Error: Invalid JSON file.')
-                        exit(1)
-
-                    # Set metadata and comments
-                    self.metadata = json_data['video']
-                    self.comments = Video.comment_generator(json_data['comments'])
-
-                    if app.cli.arguments.verbose:
-                        print('Loaded json data form input file')
+                    if all(key in json_data for key in ['video', 'comments']):
+                        self.metadata = json_data['video']
+                        self.comments = json_data['comments']
+                    else:
+                        raise InvalidInputFileException('Malformed input file.')
             else:
-                print('Error: Unable to find {}'.format(app.cli.arguments.input))
-                exit(1)
-
+                raise InvalidInputFileException('Input file does not exist.')
         else:
-            # Download from Twitch API
-            self.metadata: dict = twitch.api.video(video_id)
-            self.comments = twitch.api.comments(video_id)
+            self.metadata = self.twitch_api.video(self.id)
+            self.comments = self.twitch_api.comments(self.id)
 
     def __str__(self):
-        return self.metadata['title']
+        if 'title' in self.metadata:
+            return self.metadata['title']
+        elif self.id:
+            return self.id
+        else:
+            return 'Unknown video'
 
     def __eq__(self, other):
-        return self.id() == other.id()
-
-    def id(self) -> str:
-        return self.metadata['_id'].strip('v')
-
-    @staticmethod
-    def comment_generator(comments: List[dict]) -> Generator[dict, None, None]:
-        for comment in comments:
-            yield comment
+        return self.id == other.id
